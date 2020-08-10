@@ -1,10 +1,34 @@
 # Changelog
 
+## Rev 10 Update 6
+
+- fix of `RemainingDeliveryTime`. Trough positioning of `GameTime` and `DeliveryTime` in the shared memory, this value was never calculated. #66
+  - To avoid broke other stuff that use this or the shared memory, the shared memory layout wasn't change
+  - Before when setting the `GameTime` the `RemainingDeliveryTime` was set, but `DeliveryTime` wasn't at that point.
+  - Now we set `GameTime` before and when `DeliveryTime` is set we also set `RemainingDeliveryTime` which also makes much more sense.
+- fix that the gameplay events are called before the data is updated. Now the data is updated and then events are called.
+- the `amount` by the `RefuelEvent` should now delivere better values (sometimes it was a tick behind, that shouldn't be the case anymore).
+- fix that `JobCancelledEvent` is called when a profile is changed, but had an active job (seems to happen on the first profile change).
+
+### SDK Changes
+
+- Update to 1.12
+  - only adds new fine cases to the `FinedEvent`
+
+### known issues
+
+- when changing the profile or truck an `RefuelPayedEvent` can be called. I thought i fixed it, but i need to rethink how to 
+
+### Shared Memory Changes
+
+- Because new fine values can be longer than before (instead of 16 Byte it is now 32 Byte) some values moved at the end of Zone 9.
+	- ferry and train event values 
+
 ## Rev 10 Update 5
 
-- now change `onJob` and `jobFinished` with the present of `jobDelivered` and `jobChancelled`. Before it is changed after leaving the experience screen or sometimes when enter drive mode. 
+- now change `onJob` and `jobFinished` with the present of `jobDelivered` and `jobChancelled`. Before it is changed after leaving the experience screen or sometimes when enter drive mode.
   - Job values are also reseted directly with the event
-- remove variarble `i` from `scs_config_handlers.cpp` and `scs_gameplay_event_handlers.cpp`
+- remove variable `i` from `scs_config_handlers.cpp` and `scs_gameplay_event_handlers.cpp`
 - now `isCargoLoaded` won't be reseted twiced by calling `set_job_values_zero`, instead the `plannedDistanceKm` is reseted correctly
 - **value type changed** timestamp is know a `ulong`  and not a `uint` anymore (sdk value is `unsigned long long`)
 - added 2 new values: `simulation timestamp` and `render timestamp` both are `ulong` values similar to the `timestamp` -> changes in Shared Memory
